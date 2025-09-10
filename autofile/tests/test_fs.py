@@ -77,6 +77,15 @@ def test__theory():
 
     thy_fs[-1].create(locs)
     thy_path = thy_fs[-1].path(locs)
+    print(thy_path)
+    assert os.path.exists(thy_path)
+
+    # active space test
+    locs = ['casscf', '6-31g', [1104, 1103]]
+
+    thy_fs[-1].create(locs)
+    thy_path = thy_fs[-1].path(locs)
+    print(thy_path)
     assert os.path.exists(thy_path)
 
 
@@ -190,9 +199,9 @@ def test__zmatrix():
     assert automol.zmat.almost_equal(
         zma_fs[-1].file.zmatrix.read(locs), ref_zma)
 
-    ref_rxn = automol.reac.Reaction(
-        rxn_cls=automol.par.ReactionClass.Typ.HYDROGEN_ABSTRACTION,
-        forw_tsg=(
+    ref_rxn = automol.reac.from_forward_reverse(
+        cla=automol.ReactionClass.HYDROGEN_ABSTRACTION,
+        ftsg=(
             {0: ('C', 0, None), 1: ('H', 0, None), 2: ('H', 0, None),
              3: ('H', 0, None), 4: ('H', 0, None), 5: ('O', 0, None),
              6: ('H', 0, None)},
@@ -200,7 +209,7 @@ def test__zmatrix():
              frozenset({4, 5}): (0.1, None),
              frozenset({0, 1}): (1, None), frozenset({0, 2}): (1, None),
              frozenset({0, 4}): (0.9, None)}),
-        back_tsg=(
+        rtsg=(
             {0: ('O', 0, None), 1: ('H', 0, None), 2: ('H', 0, None),
              3: ('C', 0, None), 4: ('H', 0, None), 5: ('H', 0, None),
              6: ('H', 0, None)},
@@ -554,7 +563,7 @@ def test__iterate_locators():
     # Loop over species locs (generate geo from ich and match filesys)
     for spc_locs, in spc_locators:
         ich, _, _ = spc_locs
-        ref_geo = automol.inchi.geometry(ich)
+        ref_geo = automol.chi.geometry(ich)
 
         spc_fs = autofile.fs.species(prefix)
         thy_fs = autofile.fs.theory(spc_fs[-1].path(spc_locs))
@@ -563,6 +572,27 @@ def test__iterate_locators():
             for cnf_locs in cnf_fs[-1].existing():
                 geo = cnf_fs[-1].file.geometry.read(cnf_locs)
                 assert automol.geom.almost_equal_dist_matrix(ref_geo, geo)
+
+
+def test__path_prefix():
+    """ test autofile.fs.path_prefix
+    """
+    prefix = os.path.join(PREFIX, 'data4')
+    _build_fs(prefix)
+
+    # Set locs for this test
+    spc_locs = ['InChI=1S/H2O/h1H2', 0, 1]
+    thy_locs = ['hf', 'sto-3g', 'U']
+    cnf_locs_1 = ['rQ5VxakIXDkDp', 'cdgZx6pwjFtcX']
+
+    # Set cnf fs using the manager
+    cnf_fs = autofile.fs.manager(
+        prefix, [['SPECIES', spc_locs], ['THEORY', thy_locs]], 'CONFORMER')
+    spc_fs = autofile.fs.species(prefix)
+    spc_prefix = spc_fs[-1].path(spc_locs)
+    path_prefix = autofile.fs.path_prefix(
+        cnf_fs[-1].path(cnf_locs_1), ['THEORY', 'CONFORMER'])
+    assert spc_prefix == path_prefix
 
 
 def _build_fs(prefix):
@@ -586,7 +616,7 @@ def _build_fs(prefix):
         cnf_fs = autofile.fs.conformer(thy_path)
         cnf_fs[-1].create(locs_set[2])
         cnf_fs[-1].file.geometry_input.write(inp_name, locs_set[2])
-        geo = automol.inchi.geometry(locs_set[0][0])
+        geo = automol.chi.geometry(locs_set[0][0])
         cnf_fs[-1].file.geometry.write(geo, locs_set[2])
 
 
@@ -610,3 +640,7 @@ FAKE_NAMES_DCT = {
     'set3': 'inp3',
     'set4': 'inp4'
 }
+
+
+if __name__ == '__main__':
+    test__theory()

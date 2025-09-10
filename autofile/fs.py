@@ -95,6 +95,7 @@ class FileAttributeName():
     VPT2_INPUT = 'vpt2_input'
     IRC_INPUT = 'irc_input'
     ENERGY = 'energy'
+    INF_SEP_ENE = 'inf_sep_ene'
     GEOM = 'geometry'
     ZMAT = 'zmatrix'
     GRAD = 'gradient'
@@ -491,11 +492,13 @@ def symmetry(prefix):
 
     traj_dfile = data_files.trajectory(_FilePrefix.CONF)
     geom_dfile = data_files.geometry(_FilePrefix.GEOM)
-
+    geom_inf_dfile = data_files.information(_FilePrefix.GEOM,
+                                            function=info_objects.run)
     trunk_ds.add_data_files({
         FileAttributeName.TRAJ: traj_dfile})
     leaf_ds.add_data_files({
-        FileAttributeName.GEOM: geom_dfile})
+        FileAttributeName.GEOM: geom_dfile,
+        FileAttributeName.GEOM_INFO: geom_inf_dfile})
 
     return (trunk_ds, leaf_ds)
 
@@ -708,6 +711,11 @@ def cscan(prefix):
     branch1_ds.add_data_files({
         FileAttributeName.INFO: inf_dfile,
         FileAttributeName.TRAJ: traj_dfile})
+
+    inf_sep_ene_dfile = data_files.energy(_FilePrefix.VRCTST)
+
+    branch2_ds.add_data_files({
+        FileAttributeName.INF_SEP_ENE: inf_sep_ene_dfile})
 
     geom_inf_dfile = data_files.information(_FilePrefix.GEOM,
                                             function=info_objects.run)
