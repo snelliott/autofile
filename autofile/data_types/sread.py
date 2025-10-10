@@ -36,6 +36,42 @@ def instability(instab_str):
     return tra
 
 
+def input_file(inp_str):
+    """ read input object from a string
+
+    :param inp_str: string to read (YAML or plain text)
+    :type inp_str: str
+    :return: input object (dict if YAML, str if plain text)
+    :rtype: Union[dict, str]
+    """
+    if inp_str.startswith('__yaml__\n'):
+        # Strip prefix and newline, then parse YAML
+        yaml_str = inp_str[len('__yaml__\n'):]
+        try:
+            return yaml.safe_load(yaml_str)
+        except yaml.YAMLError:
+            return inp_str
+    return inp_str
+
+
+def output_file(out_str):
+    """ read output object from a string
+
+    :param out_str: string to read (YAML or plain text)
+    :type out_str: str
+    :return: output object (dict if YAML, str if plain text)
+    :rtype: Union[dict, str]
+    """
+    if out_str.startswith('__yaml__\n'):
+        # Strip prefix and newline, then parse YAML
+        yaml_str = out_str[len('__yaml__\n'):]
+        try:
+            return yaml.safe_load(yaml_str)
+        except yaml.YAMLError:
+            return out_str
+    return out_str
+
+
 def energy(ene_str):
     """ read an energy (hartree) from a string (hartree)
 

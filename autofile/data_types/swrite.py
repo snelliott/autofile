@@ -37,6 +37,39 @@ def instability(instab_rxn):
     return rxn_str
 
 
+def input_file(inp_obj):
+    """ write input object to a string
+
+    :param inp_obj: input object (dict or string)
+    :type inp_obj: Union[dict, str]
+    :return: string representation
+    :rtype: str
+    """
+    if isinstance(inp_obj, str):
+        inp_str = inp_obj
+    else:
+        inp_str =  '__yaml__\n' + yaml.dump(
+            _simplify_data(inp_obj), Dumper=yaml.Dumper, default_flow_style=None, sort_keys=False)
+    return inp_str
+
+
+def output_file(out_obj):
+    """ write output object to a string
+
+    :param out_obj: output object (dict or string)
+    :type out_obj: Union[dict, str]
+    :return: string representation with __yaml__ prefix for dictionaries
+    :rtype: str
+    """
+    if isinstance(out_obj, str):
+        out_str = out_obj
+    else:
+        out_str ='__yaml__\n' + yaml.dump(
+            _simplify_data(out_obj), Dumper=yaml.Dumper, default_flow_style=None, sort_keys=False)
+    # For dictionaries, add __yaml__ prefix and convert to YAML
+    return out_str
+
+
 def energy(ene):
     """ write an energy (hartree) to a string (hartree)
 
@@ -439,3 +472,23 @@ def _frequencies(freq):
     for val in freq:
         freq_str += f'{val:>8.1f}\n'
     return freq_str
+
+
+def _simplify_data(obj):
+    """Convert numpy arrays, numpy scalars, and tuples to simple Python lists and values.
+    
+    Args:
+        obj: The object to simplify
+    Returns:
+        Simplified version of the object with standard Python types
+    """
+    
+    if isinstance(obj, dict):
+        return {k: _simplify_data(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_simplify_data(x) for x in obj]
+    elif isinstance(obj, numpy.ndarray):
+        return _simplify_data(obj.tolist())
+    elif isinstance(obj, numpy.generic):
+        return obj.item()
+    return obj
