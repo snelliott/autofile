@@ -65,11 +65,19 @@ def input_file(file_prefix):
 
     :param file_prefix: path to file
     :type file_prefix: str
+    :param function: optional input-generator function for serializing input data
+    :type function: callable
     :return: instance of DataFile class
     :rtype: Datafile
     """
+    def writer_(inp_obj):
+        return autofile.data_types.swrite.input_file(inp_obj)
+
+    def reader_(inp_str):
+        return autofile.data_types.sread.input_file(inp_str)
+
     name = autofile.data_types.name.input_file(file_prefix)
-    return model.DataFile(name=name)
+    return model.DataFile(name=name, writer_=writer_, reader_=reader_)
 
 
 def output_file(file_prefix):
@@ -80,8 +88,14 @@ def output_file(file_prefix):
     :return: instance of DataFile class
     :rtype: Datafile
     """
+    def writer_(out_obj):
+        return autofile.data_types.swrite.output_file(out_obj)
+
+    def reader_(out_str):
+        return autofile.data_types.sread.output_file(out_str)
+
     name = autofile.data_types.name.output_file(file_prefix)
-    return model.DataFile(name=name)
+    return model.DataFile(name=name, writer_=writer_, reader_=reader_)
 
 
 def instability(file_prefix):

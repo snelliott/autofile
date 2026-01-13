@@ -187,8 +187,12 @@ def theory_leaf(method, basis, orb_type):
     """
 
     # Pull apart the method
-    core_method, pfxs = elstruct.Method.evaluate_method_type(method)
-
+    if elstruct.method_is_mlip(method):
+        core_method = elstruct.mlip_from_method(method)
+        pfxs = ()
+    else:
+        core_method, pfxs = elstruct.Method.evaluate_method_type(method)
+    
     # Build a hash of the prefixes
     if pfxs:
         ord_pfx_str = ''.join(list(pfxs))
@@ -196,7 +200,7 @@ def theory_leaf(method, basis, orb_type):
     else:
         hashed_pfx = ''
 
-    assert elstruct.Method.contains(core_method)
+    assert elstruct.Method.contains(core_method) or elstruct.Model.contains(core_method)
     assert elstruct.Basis.contains(basis)
 
     if orb_type in ('R', 'U'):
